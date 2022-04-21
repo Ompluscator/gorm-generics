@@ -43,6 +43,7 @@ type ProductGorm struct {
 }
 
 // ToEntity respects the gorm_generics.GormModel interface
+// Creates new Entity from GORM model.
 func (g ProductGorm) ToEntity() Product {
 	return Product{
 		ID:          g.ID,
@@ -52,8 +53,9 @@ func (g ProductGorm) ToEntity() Product {
 	}
 }
 
-// NewProductGorm respects the factory method gorm_generics.ModelFactoryMethod
-func NewProductGorm(product Product) ProductGorm {
+// FromEntity respects the gorm_generics.GormModel interface
+// Creates new GORM model from Entity.
+func (g ProductGorm) FromEntity(product Product) interface{} {
 	return ProductGorm{
 		ID:          product.ID,
 		Name:        product.Name,
@@ -73,7 +75,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repository := gorm_generics.NewRepository(db, NewProductGorm)
+	repository := gorm_generics.NewRepository[ProductGorm, Product](db)
 
 	ctx := context.Background()
 
