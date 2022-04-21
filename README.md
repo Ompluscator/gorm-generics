@@ -7,7 +7,7 @@ with [GORM](https://gorm.io/index.html), an Object-relational
 mapping library for Golang.
 
 At this stage it emphasizes possibilities, and it is not stable implementation.
-In this stage, tt is not meant to be used for production system.
+In this stage, it is not meant to be used for production system.
 
 Future development is the intention for this project,
 and any contribution is more than welcome.
