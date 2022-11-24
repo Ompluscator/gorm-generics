@@ -103,33 +103,27 @@ func (r *GormRepository[M, E]) FindByID(ctx context.Context, id any) (E, error) 
 	return model.ToEntity(), nil
 }
 
-func (r *GormRepository[M, E]) Find(ctx context.Context, specification Specification) ([]E, error) {
-	return r.FindWithLimit(ctx, &specification, -1, -1)
+func (r *GormRepository[M, E]) Find(ctx context.Context, specifications ...Specification) ([]E, error) {
+	return r.FindWithLimit(ctx, -1, -1, specifications...)
 }
 
-func (r *GormRepository[M, E]) Count(ctx context.Context, specification *Specification) (i int64, err error) {
+func (r *GormRepository[M, E]) Count(ctx context.Context, specifications ...Specification) (i int64, err error) {
 	model := new(M)
-	err = r.getPreWarmDbForSelect(ctx, specification).Model(model).Count(&i).Error
+	err = r.getPreWarmDbForSelect(ctx, specifications...).Model(model).Count(&i).Error
 	return
 }
 
-func (r *GormRepository[M, E]) getPreWarmDbForSelect(ctx context.Context, specification *Specification) *gorm.DB {
+func (r *GormRepository[M, E]) getPreWarmDbForSelect(ctx context.Context, specification ...Specification) *gorm.DB {
 	dbPrewarm := r.db.WithContext(ctx)
-	if specification != nil {
-		dbPrewarm = dbPrewarm.Where((*specification).GetQuery(), (*specification).GetValues()...)
+	for _, s := range specification {
+		dbPrewarm = dbPrewarm.Where(s.GetQuery(), s.GetValues()...)
 	}
 	return dbPrewarm
 }
-func (r *GormRepository[M, E]) FindWithLimit(ctx context.Context, specification *Specification, limit int, offset int) ([]E, error) {
+func (r *GormRepository[M, E]) FindWithLimit(ctx context.Context, limit int, offset int, specifications ...Specification) ([]E, error) {
 	var models []M
-	if limit == 0 {
-		limit = -1
-	}
-	if offset == 0 {
-		offset = -1
-	}
 
-	dbPrewarm := r.getPreWarmDbForSelect(ctx, specification)
+	dbPrewarm := r.getPreWarmDbForSelect(ctx, specifications...)
 	err := dbPrewarm.Limit(limit).Offset(offset).Find(&models).Error
 
 	if err != nil {
@@ -145,12 +139,14 @@ func (r *GormRepository[M, E]) FindWithLimit(ctx context.Context, specification 
 }
 
 func (r *GormRepository[M, E]) FindAll(ctx context.Context) ([]E, error) {
-	return r.FindWithLimit(ctx, nil, -1, -1)
+	return r.FindWithLimit(ctx, -1, -1)
 }
 
+// WIP
 func (r *GormRepository[M, E]) BatchDelete(ctx context.Context, entities []*E) error {
+	var convertedChunk []M
 	for _, chunk := range ChunkSlice(entities, 1000) {
-		convertedChunk := make([]M, len(chunk)) //should be declared outside for and emptied here
+		convertedChunk = nil
 		for _, e := range chunk {
 			var start M
 			model := start.FromEntity(*e).(M)
