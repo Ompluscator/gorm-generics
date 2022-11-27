@@ -33,33 +33,6 @@ func (r *GormRepository[M, E]) Insert(ctx context.Context, entity *E) error {
 	return nil
 }
 
-// WIP
-func (r *GormRepository[M, E]) BatchInsert(ctx context.Context, entities []*E) error {
-	convertion := make([]*E, len(entities))
-	var entity *E
-	for _, chunk := range ChunkSlice(entities, 1000) {
-		convertedChunk := make([]M, len(chunk)) //should be declared outside for and emptied here
-		for _, e := range chunk {
-			var start M
-			model := start.FromEntity(*e).(M)
-			convertedChunk = append(convertedChunk, model)
-		}
-		err := r.db.WithContext(ctx).Create(convertedChunk).Error
-		if err != nil {
-			return err
-		}
-		unconvertedChunk := make([]*E, len(convertedChunk)) //should be declared outside for and emptied here
-		for _, e := range convertedChunk {
-			*entity = e.ToEntity() //major error
-			unconvertedChunk = append(unconvertedChunk, entity)
-		}
-		convertion = append(convertion, unconvertedChunk...)
-	}
-
-	entities = convertion
-	return nil
-}
-
 func (r *GormRepository[M, E]) Delete(ctx context.Context, entity *E) error {
 	var start M
 	model := start.FromEntity(*entity).(M)
@@ -140,22 +113,4 @@ func (r *GormRepository[M, E]) FindWithLimit(ctx context.Context, limit int, off
 
 func (r *GormRepository[M, E]) FindAll(ctx context.Context) ([]E, error) {
 	return r.FindWithLimit(ctx, -1, -1)
-}
-
-// WIP
-func (r *GormRepository[M, E]) BatchDelete(ctx context.Context, entities []*E) error {
-	var convertedChunk []M
-	for _, chunk := range ChunkSlice(entities, 1000) {
-		convertedChunk = nil
-		for _, e := range chunk {
-			var start M
-			model := start.FromEntity(*e).(M)
-			convertedChunk = append(convertedChunk, model)
-		}
-		err := r.db.WithContext(ctx).Delete(convertedChunk).Error
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

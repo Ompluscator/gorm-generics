@@ -2,7 +2,7 @@ package gorm_generics_test
 
 import (
 	"context"
-	gorm_generics "github.com/philiphil/gorm-generics"
+	gorm_generics "github.com/ompluscator/gorm-generics"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -73,7 +73,7 @@ func TestGormRepository_Insert(t *testing.T) {
 	ctx := context.Background()
 
 	product := Product{
-		ID : 8,
+		ID:          8,
 		Name:        "product1",
 		Weight:      100,
 		IsAvailable: true,
@@ -96,7 +96,6 @@ func TestGormRepository_FindByID(t *testing.T) {
 	}
 }
 
-
 func TestGormRepository_Count(t *testing.T) {
 	db, _ := getDB()
 	repository := gorm_generics.NewRepository[ProductGorm, Product](db)
@@ -104,10 +103,10 @@ func TestGormRepository_Count(t *testing.T) {
 
 	nb, err := repository.Count(ctx)
 
-	if err != nil  {
+	if err != nil {
 		panic(err)
 	}
-	if nb != 1{
+	if nb != 1 {
 		panic("not good count")
 	}
 }
@@ -116,12 +115,12 @@ func TestGormRepository_DeleteByID(t *testing.T) {
 	db, _ := getDB()
 	repository := gorm_generics.NewRepository[ProductGorm, Product](db)
 	ctx := context.Background()
-	err := repository.DeleteById(ctx,8)
-	if err != nil  {
+	err := repository.DeleteById(ctx, 8)
+	if err != nil {
 		panic(err)
 	}
 	_, err = repository.FindByID(ctx, 8)
-	if err == nil{
+	if err == nil {
 		panic("supposed to be deleted")
 	}
 }
@@ -132,14 +131,14 @@ func TestGormRepository_Find(t *testing.T) {
 	ctx := context.Background()
 
 	product := Product{
-		ID : 1,
+		ID:          1,
 		Name:        "product1",
 		Weight:      100,
 		IsAvailable: true,
 	}
 	repository.Insert(ctx, &product)
 	product2 := Product{
-		ID : 2,
+		ID:          2,
 		Name:        "product2",
 		Weight:      50,
 		IsAvailable: true,
@@ -149,12 +148,12 @@ func TestGormRepository_Find(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if len(many) != 2{
+	if len(many) != 2 {
 		panic("should be 2")
 	}
 
 	repository.Insert(ctx, &Product{
-		ID : 3,
+		ID:          3,
 		Name:        "product3",
 		Weight:      250,
 		IsAvailable: false,
@@ -164,10 +163,10 @@ func TestGormRepository_Find(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if len(many) != 2{
+	if len(many) != 2 {
 		panic("should be 2")
 	}
-	
+
 	many, err = repository.Find(ctx, gorm_generics.And(
 		gorm_generics.GreaterOrEqual("weight", 90),
 		gorm_generics.Equal("is_available", true)),
@@ -175,7 +174,7 @@ func TestGormRepository_Find(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if len(many) != 1{
+	if len(many) != 1 {
 		panic("should be 1")
 	}
 }
@@ -184,31 +183,30 @@ func TestGormRepository_BatchDelete(t *testing.T) {
 	db, _ := getDB()
 	repository := gorm_generics.NewRepository[ProductGorm, Product](db)
 	ctx := context.Background()
-	
-	many, _ := repository.Find(ctx, 
+
+	many, _ := repository.Find(ctx,
 		gorm_generics.GreaterOrEqual("weight", 50),
 		gorm_generics.Equal("is_available", true),
 	)
 
-	if len(many) != 2{
+	if len(many) != 2 {
 		panic("should be 2")
 	}
-	
+
 	var entities []*Product
 	for _, i2 := range many {
-		entities=append(entities, &i2)		
+		entities = append(entities, &i2)
 	}
-	
 
-	err := repository.BatchDelete(ctx,entities)
-	if err != nil  {
+	err := repository.BatchDelete(ctx, entities)
+	if err != nil {
 		panic(err)
 	}
 	i, err := repository.Count(ctx)
-	if err != nil{
+	if err != nil {
 		panic("error while count ?")
 	}
-	if i != 1{
+	if i != 1 {
 		println(i)
 		panic("should be 1")
 	}
