@@ -179,43 +179,8 @@ func TestGormRepository_Find(t *testing.T) {
 	}
 }
 
-func TestGormRepository_BatchDelete(t *testing.T) {
-	db, _ := getDB()
-	repository := gorm_generics.NewRepository[ProductGorm, Product](db)
-	ctx := context.Background()
-
-	many, _ := repository.Find(ctx,
-		gorm_generics.GreaterOrEqual("weight", 50),
-		gorm_generics.Equal("is_available", true),
-	)
-
-	if len(many) != 2 {
-		panic("should be 2")
-	}
-
-	var entities []*Product
-	for _, i2 := range many {
-		entities = append(entities, &i2)
-	}
-
-	err := repository.BatchDelete(ctx, entities)
-	if err != nil {
-		panic(err)
-	}
-	i, err := repository.Count(ctx)
-	if err != nil {
-		panic("error while count ?")
-	}
-	if i != 1 {
-		println(i)
-		panic("should be 1")
-	}
-}
-
 /*
 TODO
-batchInsert (finish it first)
-BatchDelete
 Delete (by item)
 Update
 Find (with sql cond)
