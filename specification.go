@@ -117,6 +117,14 @@ func LessOrEqual[T comparable](field string, value T) Specification {
 	}
 }
 
+func In[T any](field string, value []T) Specification {
+	return binaryOperatorSpecification[[]T]{
+		field:    field,
+		operator: "IN",
+		value:    value,
+	}
+}
+
 type stringSpecification string
 
 func (s stringSpecification) GetQuery() string {
